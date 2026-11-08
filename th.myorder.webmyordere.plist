@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- เปิดอัตโนมัติตอนล็อกอิน: แก้ __DIR__ เป็น path ของโฟลเดอร์ repo (install.sh ทำให้) -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>th.myorder.webmyordere</string>
+  <key>ProgramArguments</key>
+  <array><string>/bin/zsh</string><string>__DIR__/start.sh</string></array>
+  <key>WorkingDirectory</key><string>__DIR__</string>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>__DIR__/web.log</string>
+  <key>StandardErrorPath</key><string>__DIR__/web.log</string>
+</dict>
+</plist>

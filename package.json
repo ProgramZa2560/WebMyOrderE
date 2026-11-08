@@ -1,0 +1,12 @@
+{
+  "name": "webmyordere",
+  "version": "1.0.0",
+  "private": true,
+  "description": "เว็บควบคุม Order (แผงระยะไกล) แยกเครื่อง — relay ระหว่างเบราว์เซอร์กับแอป Order",
+  "main": "server.js",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node server.js",
+    "serve": "zsh start.sh"
+  }
+}
