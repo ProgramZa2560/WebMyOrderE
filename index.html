@@ -1,0 +1,17 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Order</title>
+<style>body{background:#111;color:#ddd;font:16px -apple-system,sans-serif;display:flex;height:100vh;align-items:center;justify-content:center;margin:0;text-align:center;padding:16px}</style></head>
+<body><div id="m">กำลังเปิด Order…</div>
+<script>
+// ลิงก์ถาวร (GitHub Pages) → พาไปลิงก์ tunnel ล่าสุดของแอป Order
+// แอป Order (web.json: "ghRepo":"ProgramZa2560/WebMyOrderE") อัปเดต link.json ทุกครั้งที่ได้ URL ใหม่
+// รหัสผ่านอยู่ใน #k=… เก็บในเบราว์เซอร์นี้เท่านั้น ไม่ถูกส่งไป GitHub
+(async()=>{const m=document.getElementById('m');
+const h=new URLSearchParams(location.hash.slice(1)).get('k');if(h){try{localStorage.setItem('k',h)}catch(e){}history.replaceState(null,'',location.pathname)}
+let k='';try{k=localStorage.getItem('k')||''}catch(e){}
+try{const r=await fetch('https://api.github.com/repos/ProgramZa2560/WebMyOrderE/contents/link.json?t='+Date.now(),{cache:'no-store',headers:{Accept:'application/vnd.github.raw+json'}});
+if(!r.ok)throw 0;const j=await r.json();if(!j.url)throw 0;
+const ok=await fetch(j.url+'/',{mode:'no-cors',cache:'no-store'}).then(()=>1,()=>0);
+if(!ok){m.innerHTML='แอป Order ออฟไลน์ (เครื่องร้านปิด/เน็ตหลุด)<br><small>ลองใหม่อัตโนมัติใน 10 วิ</small>';return setTimeout(()=>location.reload(),10000)}
+location.replace(j.url+'/'+(k?'?k='+encodeURIComponent(k):''))}
+catch(e){m.textContent='ยังไม่มีลิงก์ — เปิดแอป Order ที่เครื่องร้านก่อน'}})()
+</script></body></html>
