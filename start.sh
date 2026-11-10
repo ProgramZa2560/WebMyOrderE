@@ -23,7 +23,14 @@ if [ -n "$CF_TOKEN" ] && [ -n "$CF_HOST" ]; then
 else
   cloudflared tunnel --no-autoupdate --url "http://127.0.0.1:$PORT" 2>&1 | while read -r l; do
     u=$(echo "$l" | grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' | head -1)
-    [ -n "$u" ] && echo "$u" > url.txt && echo "เว็บ: $u  (ใส่เป็น relayUrl ในแอป)"
+    if [ -n "$u" ] && [ "$u" != "$(cat url.txt 2>/dev/null)" ]; then
+      echo "$u" > url.txt
+      echo "เว็บ: $u  (ใส่เป็น relayUrl ในแอป)"
+      # อัปเดตลิงก์ถาวร (GitHub Pages อ่าน link.json แล้วพาไป tunnel ล่าสุด)
+      git pull --rebase -q 2>/dev/null
+      node -e "const fs=require('fs');fs.writeFileSync('link.json',JSON.stringify({url:process.argv[1],ts:Date.now()})+'\n')" "$u"
+      git add link.json && git commit -qm link && git push -q 2>/dev/null || echo "⚠️ push link.json ไม่สำเร็จ — ลิงก์ถาวรยังชี้ URL เก่า"
+    fi
   done &
   TUN=$!
 fi
