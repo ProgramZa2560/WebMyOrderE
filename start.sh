@@ -7,6 +7,10 @@ cd "${0:A:h}"
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 PORT="${PORT:-8780}"
 
+# อัปเดต relayUrl ใน web.json ของแอป Order ที่รันอยู่เครื่องเดียวกัน (ถ้ามี) — แอป 1.0.81 อ่านซ้ำเองตอน hello ล้ม จึงต่อใหม่ได้เองโดยไม่ต้องรีสตาร์ท
+SYNCWEB='const fs=require("fs");const f=process.env.HOME+"/Library/Application Support/Order/web.json";try{const j=JSON.parse(fs.readFileSync(f,"utf8"));if(j.relayUrl&&j.relayUrl!==process.argv[1]){j.relayUrl=process.argv[1];fs.writeFileSync(f,JSON.stringify(j,null,2)+"\n");console.log("web.json relayUrl → "+j.relayUrl)}}catch(e){}'
+syncweb() { [ -f "$HOME/Library/Application Support/Order/web.json" ] && node -e "$SYNCWEB" "$1"; return 0; }
+
 node server.js &
 SRV=$!
 trap 'kill $SRV $TUN 2>/dev/null' EXIT INT TERM
@@ -20,12 +24,14 @@ if [ -n "$CF_TOKEN" ] && [ -n "$CF_HOST" ]; then
   TUN=$!
   echo "https://$CF_HOST" > url.txt
   echo "เว็บ: https://$CF_HOST"
+  syncweb "https://$CF_HOST"
 else
   cloudflared tunnel --no-autoupdate --url "http://127.0.0.1:$PORT" 2>&1 | while read -r l; do
     u=$(echo "$l" | grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' | head -1)
     if [ -n "$u" ] && [ "$u" != "$(cat url.txt 2>/dev/null)" ]; then
       echo "$u" > url.txt
       echo "เว็บ: $u  (ใส่เป็น relayUrl ในแอป)"
+      syncweb "$u"
       # อัปเดตลิงก์ถาวร (GitHub Pages อ่าน link.json แล้วพาไป tunnel ล่าสุด)
       git pull --rebase -q 2>/dev/null
       node -e "const fs=require('fs');fs.writeFileSync('link.json',JSON.stringify({url:process.argv[1],ts:Date.now()})+'\n')" "$u"
