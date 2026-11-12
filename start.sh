@@ -51,8 +51,8 @@ else
         git add link.json && git commit -qm link && git push -q 2>/dev/null || echo "⚠️ push link.json ไม่สำเร็จ — ลิงก์ถาวรยังชี้ URL เก่า"
       fi
     done
-    echo "cloudflared หยุด ($(date '+%H:%M:%S')) — ปลุกใหม่ใน 5 วิ"
-    sleep 5
+    echo "cloudflared หยุด ($(date '+%H:%M:%S')) — ปลุกใหม่ใน 30 วิ"
+    sleep 30
   done &
   TUN=$!
 fi
