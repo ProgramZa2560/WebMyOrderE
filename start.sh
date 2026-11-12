@@ -33,7 +33,8 @@ if [ -n "$CF_TOKEN" ] && [ -n "$CF_HOST" ]; then
 else
   while :; do
     cloudflared tunnel --no-autoupdate --url "http://127.0.0.1:$PORT" 2>&1 | while read -r l; do
-      u=$(echo "$l" | grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' | head -1)
+      # URL จริงของ quick tunnel = hostname หลายคำมีขีด — 'api.trycloudflare.com' ในบรรทัด error ห้ามจับ
+      u=$(echo "$l" | grep -oE 'https://[a-z0-9]+-[a-z0-9-]+\.trycloudflare\.com' | head -1)
       if [ -n "$u" ] && [ "$u" != "$(cat url.txt 2>/dev/null)" ]; then
         echo "$u" > url.txt
         echo "เว็บ: $u  (ใส่เป็น relayUrl ในแอป)"
