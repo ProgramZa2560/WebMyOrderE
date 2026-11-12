@@ -20,23 +20,32 @@ if ! command -v cloudflared >/dev/null; then
   wait $SRV; exit
 fi
 if [ -n "$CF_TOKEN" ] && [ -n "$CF_HOST" ]; then
-  cloudflared tunnel --no-autoupdate run --token "$CF_TOKEN" &
+  # (1.0.99-start.sh) cloudflared ตาย (เน็ตหลุด/sleep) = relay หลอกว่ารันอยู่แต่เข้าไม่ได้เลย → วนปลุกใหม่ทุก 5 วิ (เดิมปล่อยตายเงียบ)
+  while :; do
+    cloudflared tunnel --no-autoupdate run --token "$CF_TOKEN" > /dev/null 2>&1
+    echo "cloudflared (named) หยุด ($(date '+%H:%M:%S')) — ปลุกใหม่ใน 5 วิ"
+    sleep 5
+  done &
   TUN=$!
   echo "https://$CF_HOST" > url.txt
   echo "เว็บ: https://$CF_HOST"
   syncweb "https://$CF_HOST"
 else
-  cloudflared tunnel --no-autoupdate --url "http://127.0.0.1:$PORT" 2>&1 | while read -r l; do
-    u=$(echo "$l" | grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' | head -1)
-    if [ -n "$u" ] && [ "$u" != "$(cat url.txt 2>/dev/null)" ]; then
-      echo "$u" > url.txt
-      echo "เว็บ: $u  (ใส่เป็น relayUrl ในแอป)"
-      syncweb "$u"
-      # อัปเดตลิงก์ถาวร (GitHub Pages อ่าน link.json แล้วพาไป tunnel ล่าสุด)
-      git pull --rebase -q 2>/dev/null
-      node -e "const fs=require('fs');fs.writeFileSync('link.json',JSON.stringify({url:process.argv[1],ts:Date.now()})+'\n')" "$u"
-      git add link.json && git commit -qm link && git push -q 2>/dev/null || echo "⚠️ push link.json ไม่สำเร็จ — ลิงก์ถาวรยังชี้ URL เก่า"
-    fi
+  while :; do
+    cloudflared tunnel --no-autoupdate --url "http://127.0.0.1:$PORT" 2>&1 | while read -r l; do
+      u=$(echo "$l" | grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' | head -1)
+      if [ -n "$u" ] && [ "$u" != "$(cat url.txt 2>/dev/null)" ]; then
+        echo "$u" > url.txt
+        echo "เว็บ: $u  (ใส่เป็น relayUrl ในแอป)"
+        syncweb "$u"
+        # อัปเดตลิงก์ถาวร (GitHub Pages อ่าน link.json แล้วพาไป tunnel ล่าสุด)
+        git pull --rebase -q 2>/dev/null
+        node -e "const fs=require('fs');fs.writeFileSync('link.json',JSON.stringify({url:process.argv[1],ts:Date.now()})+'\n')" "$u"
+        git add link.json && git commit -qm link && git push -q 2>/dev/null || echo "⚠️ push link.json ไม่สำเร็จ — ลิงก์ถาวรยังชี้ URL เก่า"
+      fi
+    done
+    echo "cloudflared หยุด ($(date '+%H:%M:%S')) — ปลุกใหม่ใน 5 วิ"
+    sleep 5
   done &
   TUN=$!
 fi
