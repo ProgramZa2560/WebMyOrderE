@@ -51,8 +51,12 @@ else
         git add link.json && git commit -qm link && git push -q 2>/dev/null || echo "⚠️ push link.json ไม่สำเร็จ — ลิงก์ถาวรยังชี้ URL เก่า"
       fi
     done
-    echo "cloudflared หยุด ($(date '+%H:%M:%S')) — ปลุกใหม่ใน 30 วิ"
-    sleep 30
+    echo "cloudflared หยุด ($(date '+%H:%M:%S')) — สอบถามเวลารอจาก Cloudflare…"
+    # (แก้ 429 วนยืดเอง) เดิมลองใหม่ทุก 30 วิ = ทุกครั้งต่อยอดหน้าต่าง rate limit → ตันนาน; ให้พักตาม retry-after ที่ Cloudflare สั่งเท่านั้น
+    RA=$(curl -s -m 10 -D - -o /dev/null -X POST https://api.trycloudflare.com/tunnel 2>/dev/null | grep -i '^retry-after:' | tr -dc '0-9')
+    W=${RA:-30}; [ "$W" -lt 30 ] 2>/dev/null && W=30
+    echo "Cloudflare ให้รอ ${W}s — ลองใหม่หลังพัก"
+    sleep "$W"
   done &
   TUN=$!
 fi

@@ -8,7 +8,7 @@
 (async()=>{const m=document.getElementById('m');
 const h=new URLSearchParams(location.hash.slice(1)).get('k');if(h){try{localStorage.setItem('k',h)}catch(e){}history.replaceState(null,'',location.pathname)}
 let k='';try{k=localStorage.getItem('k')||''}catch(e){}
-try{const r=await fetch('https://api.github.com/repos/ProgramZa2560/WebMyOrderE/contents/link.json?t='+Date.now(),{cache:'no-store',headers:{Accept:'application/vnd.github.raw+json'}});
+try{const r=await fetch('https://raw.githubusercontent.com/ProgramZa2560/WebMyOrderE/main/link.json?t='+Date.now(),{cache:'no-store'});
 if(!r.ok)throw 0;const j=await r.json();if(!j.url)throw 0;
 const ok=await fetch(j.url+'/',{mode:'no-cors',cache:'no-store'}).then(()=>1,()=>0);
 if(!ok){m.innerHTML='กำลังรอเชื่อมต่อแอป Order…<br><small>ถ้าเพิ่งเปิดแอป รอ ~1 นาที (tunnel ใหม่) · ถ้านานกว่านั้น = เครื่องร้านปิด/เน็ตหลุด<br>ลองใหม่อัตโนมัติทุก 10 วิ</small>';return setTimeout(()=>location.reload(),10000)}
