@@ -30,6 +30,12 @@ if [ -n "$CF_TOKEN" ] && [ -n "$CF_HOST" ]; then
   echo "https://$CF_HOST" > url.txt
   echo "เว็บ: https://$CF_HOST"
   syncweb "https://$CF_HOST"
+  # (named tunnel) URL ถาวร — อัปเดตลิงก์ถาวร (link.json) เมื่อเปลี่ยนโดเมนเท่านั้น
+  if ! grep -q "https://$CF_HOST" link.json 2>/dev/null; then
+    node -e "const fs=require('fs');fs.writeFileSync('link.json',JSON.stringify({url:process.argv[1],ts:Date.now()})+'\n')" "https://$CF_HOST"
+    git pull --rebase -q 2>/dev/null
+    git add link.json && git commit -qm link && git push -q 2>/dev/null || echo "⚠️ push link.json ไม่สำเร็จ — ลิงก์ถาวรยังชี้ URL เก่า"
+  fi
 else
   while :; do
     cloudflared tunnel --no-autoupdate --url "http://127.0.0.1:$PORT" 2>&1 | while read -r l; do
